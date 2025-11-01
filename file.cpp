@@ -5,6 +5,7 @@
 int ** make(int r, int c);
 void output(const int *const* mtx);
 void rm(int ** mtx, int r);
+void input(int ** mtx);
 
 int main() {
   int rows = 0, cols = 0;
@@ -19,8 +20,12 @@ int main() {
     rm(mtx, rows, cols);
     return 2; // обработка беда - локк
   }
-
-  output(mtx);
+  input(mtx, rows, cols);
+  if (std::cin.fail()) {
+    rm(mtx, rows);
+    return 1;
+  }
+  output(mtx, rows, cols);
   rm(mtx);
 }
 
@@ -42,4 +47,19 @@ int ** make(int r, int c) {
     }
   }
   return mtx;
+}
+
+void input(int ** mtx, int r, int c) {
+  for (size_t i = 0; i < r; ++i) {
+    for (size_t j = 0; j < r; ++j) {
+      std::cin >> mtx[i][j];
+    }
+  }
+}
+
+void output(const int *const* mtx, int r, int c) {
+  /* вывести так: 2 3 4
+                  5 6 7
+                  9 0 0
+  */
 }
