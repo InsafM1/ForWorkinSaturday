@@ -3,9 +3,9 @@
 #include <limits>
 
 int ** make(int r, int c);
-void output(const int *const* mtx);
+void output(const int *const* mtx, int r, int c);
 void rm(int ** mtx, int r);
-void input(int ** mtx);
+void input(int ** mtx, int r, int r);
 
 int main() {
   int rows = 0, cols = 0;
@@ -17,7 +17,7 @@ int main() {
   try {
     mtx = make_mtx(rows, cols);
   } catch (const std::bad_alloc &) {
-    rm(mtx, rows, cols);
+    rm(mtx, rows);
     return 2; // обработка беда - локк
   }
   input(mtx, rows, cols);
@@ -27,13 +27,16 @@ int main() {
   }
   output(mtx, rows, cols);
   rm(mtx);
+  return 0;
 }
 
 void rm(int ** mtx, int r) {
   for (size_t i = 0; i < r; i++) {
     delete[] mtx[i]; // если мы сразу удалим  int ** mtx, то к матрицам, на которые он указывает, не будем иметь доступа - будет утечка памяти
+    mtx[i] = nullptr; // чтобы не было "болтающего указателя" (прочитал в статье об этом)
   }
   delete[] mtx;
+  mtx = nullptr;
 }
 
 int ** make(int r, int c) {
@@ -51,15 +54,18 @@ int ** make(int r, int c) {
 
 void input(int ** mtx, int r, int c) {
   for (size_t i = 0; i < r; ++i) {
-    for (size_t j = 0; j < r; ++j) {
+    for (size_t j = 0; j < c; ++j) {
       std::cin >> mtx[i][j];
     }
   }
 }
 
 void output(const int *const* mtx, int r, int c) {
-  /* вывести так: 2 3 4
-                  5 6 7
-                  9 0 0
-  */
+  for (size_t i = 0; i < r; ++i) {
+    for (size_t j = 0; j < c; ++j) {
+      std::cout << mtx[i][j] << " ";
+    }
+    std::cout << '\n';
+  }
+  rm(mtx, r);
 }
