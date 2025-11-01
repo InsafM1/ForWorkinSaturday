@@ -5,67 +5,82 @@
 int ** make(int r, int c);
 void output(const int *const* mtx, int r, int c);
 void rm(int ** mtx, int r);
-void input(int ** mtx, int r, int r);
+int **conver(const int * t, size_t n, const size_t * lns, size_t rows);
 
 int main() {
-  int rows = 0, cols = 0;
-  std::cin << rows << cols;
-  if (std::cin.fail()) {
-    return 1;
+  size_t rows = 4;
+  int ** table = nullptr;
+  int * t = nullptr, int * lns = nullptr;
+  try
+  {
+    int *t = new int[12]{5 ,5 ,5 ,5 ,6, 6, 7, 7, 7, 7, 7, 8};
+    int *lns = new int[4]{4 ,2, 5, 1};
   }
-  int ** mtx = nullptr;
-  try {
-    mtx = make_mtx(rows, cols);
-  } catch (const std::bad_alloc &) {
-    rm(mtx, rows);
+  catch(const std::bad_alloc &e)
+  {
+    delete [] t;
+    delete [] lns;
+    lns = nullptr, t = nullptr;
+    std::cerr << e.what() << std::endl;
+    return 2;
+  }
+  size_t n = 0;
+  for (size_t i = 0; i < rows; ++i) {
+    n += lns[i];
+  }
+  try
+  {
+    table = conver(t, n, lns, rows);
+  }
+  catch (const std::bad_alloc &)
+  {
+    rm(table, rows);
+    delete [] t;
+    delete [] lns;
     return 2; // обработка беда - локк
   }
-  input(mtx, rows, cols);
-  if (std::cin.fail()) {
-    rm(mtx, rows);
-    return 1;
-  }
-  output(mtx, rows, cols);
-  rm(mtx);
+  output(table, rows, lns);
+  delete [] t;
+  delete [] lns;
+  t = nullptr, lns = nullptr;
+  rm(table, rows);
   return 0;
 }
 
 void rm(int ** mtx, int r) {
-  for (size_t i = 0; i < r; i++) {
-    delete[] mtx[i]; // если мы сразу удалим  int ** mtx, то к матрицам, на которые он указывает, не будем иметь доступа - будет утечка памяти
-    mtx[i] = nullptr; // чтобы не было "болтающего указателя" (прочитал в статье об этом)
+  for (int i = 0; i < r; i++) {
+    delete[] mtx[i];
+    mtx[i] = nullptr;
   }
   delete[] mtx;
   mtx = nullptr;
 }
 
-int ** make(int r, int c) {
-  int ** mtx =  new int*[r]; // [*][*]...[*] r раз
-  for (size_t i = 0; i < r; i++) {
-    try {
-      mtx[i] = new int[c]; // выделаем массив
-    } catch (...) {
-      rm(mtx,i);
-      throw;
-    }
-  }
-  return mtx;
-}
-
-void input(int ** mtx, int r, int c) {
+void output(const int *const* mtx, int r, int * lns) {
   for (size_t i = 0; i < r; ++i) {
-    for (size_t j = 0; j < c; ++j) {
-      std::cin >> mtx[i][j];
-    }
-  }
-}
-
-void output(const int *const* mtx, int r, int c) {
-  for (size_t i = 0; i < r; ++i) {
-    for (size_t j = 0; j < c; ++j) {
+    for (size_t j = 0; j < lns[i]; ++j) {
       std::cout << mtx[i][j] << " ";
     }
     std::cout << '\n';
   }
   rm(mtx, r);
+}
+
+int **conver(const int * t, size_t n, const size_t * lns, size_t rows) {
+  int ** table = new int *[rows];
+  size_t k = 0;
+  for (size_t i = 0; i < rows; ++i) {
+    try {
+      table[i] = new int[lns[i]];
+      for (size_t j = 0; j < lns[i]; ++j) {
+        table[i][j] = t[k];
+        k++;
+      }
+    }
+    catch (...) {
+      rm(table, i);
+      throw;
+    }
+  }
+  return table;
 }
